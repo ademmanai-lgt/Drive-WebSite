@@ -1,7 +1,26 @@
 /* ============ CONFIG ============ */
 const PROXY = "https://drive-proxy.adem-manai.workers.dev"; // your Cloudflare Worker
 const REFRESH_SECONDS = 20;                                 // how often the site re-checks Drive
+const ALLOW_DOWNLOAD = false;                               // true = downloads/open-in-Drive enabled again
 /* ================================ */
+
+// View-only mode: hide download UI, block right-click, save/print/copy shortcuts, drag, and printing
+if(!ALLOW_DOWNLOAD){
+  document.body.classList.add("viewonly");
+  document.addEventListener("contextmenu",e=>e.preventDefault());
+  document.addEventListener("dragstart",e=>e.preventDefault());
+  document.addEventListener("copy",e=>e.preventDefault());
+  document.addEventListener("cut",e=>e.preventDefault());
+  document.addEventListener("keydown",e=>{
+    const k=e.key.toLowerCase();
+    if((e.ctrlKey||e.metaKey) && ["s","p","c","u","a"].includes(k)) e.preventDefault();
+    if(e.key==="F12" || e.key==="PrintScreen" || ((e.ctrlKey||e.metaKey) && e.shiftKey && ["i","j","c","s"].includes(k))) e.preventDefault();
+  });
+  window.addEventListener("keyup",e=>{ if(e.key==="PrintScreen"){ try{ navigator.clipboard.writeText(""); }catch{} } });
+  // blur content when the tab/window loses focus (makes snipping tools less convenient)
+  window.addEventListener("blur",()=>document.body.classList.add("blurred"));
+  window.addEventListener("focus",()=>document.body.classList.remove("blurred"));
+}
 
 const FOLDER_MIME = "application/vnd.google-apps.folder";
 const $ = s => document.querySelector(s);
@@ -105,8 +124,8 @@ function render(){
       <span class="badge">${CAT_LABEL[c]}</span>
       <div class="actions">
         ${dir?`<span class="btn p">Open ›</span>`:
-          `<span class="btn p" data-act="view">Preview</span>
-           <a class="btn" data-act="dl" target="_blank" rel="noopener" href="${isGoogleApp(f)?esc(f.webViewLink):dl}">${isGoogleApp(f)?"Open":"Download"}</a>`}
+          `<span class="btn p" data-act="view">Preview</span>`+
+          (ALLOW_DOWNLOAD?`<a class="btn" data-act="dl" target="_blank" rel="noopener" href="${isGoogleApp(f)?esc(f.webViewLink):dl}">${isGoogleApp(f)?"Open":"Download"}</a>`:"")}
       </div></div>`;
   }).join("")+'</div>';
 
@@ -123,7 +142,16 @@ function render(){
 function openPreview(f){
   $("#mtitle").textContent=f.name;
   $("#mframe").src=`https://drive.google.com/file/d/${f.id}/preview`;
-  $("#mdl").href = isGoogleApp(f)?f.webViewLink:`https://drive.google.com/uc?export=download&id=${f.id}`;
+  if(ALLOW_DOWNLOAD){
+    $("#mdl").href = isGoogleApp(f)?f.webViewLink:`https://drive.google.com/uc?export=download&id=${f.id}`;
+    $("#mdl").style.display="";
+    $("#mframe").sandbox="allow-scripts allow-same-origin allow-popups";
+  }else{
+    $("#mdl").removeAttribute("href");
+    $("#mdl").style.display="none";
+    // no allow-popups: blocks Drive's "open in new window" pop-out button
+    $("#mframe").sandbox="allow-scripts allow-same-origin";
+  }
   $("#modal").classList.add("on");
 }
 function closeModal(){ $("#modal").classList.remove("on"); $("#mframe").src="about:blank"; }

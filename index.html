@@ -52,7 +52,10 @@
 
 <div class="modal" id="modal"><div class="mbox">
   <div class="mhead"><span id="mtitle"></span><div style="display:flex;gap:8px"><a class="btn p" id="mdl" target="_blank" rel="noopener" style="padding:6px 12px">Download</a><button class="btn" id="mclose" style="padding:6px 12px">Close ✕</button></div></div>
-  <iframe id="mframe" allow="autoplay" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+  <div class="mwrap">
+    <iframe id="mframe" allow="autoplay" sandbox="allow-scripts allow-same-origin"></iframe>
+    <div class="shield" aria-hidden="true"></div>
+  </div>
 </div></div>
 <script src="drive(ADEM).js"></script>
 </body>
