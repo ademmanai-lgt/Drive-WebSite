@@ -17,9 +17,6 @@ if(!ALLOW_DOWNLOAD){
     if(e.key==="F12" || e.key==="PrintScreen" || ((e.ctrlKey||e.metaKey) && e.shiftKey && ["i","j","c","s"].includes(k))) e.preventDefault();
   });
   window.addEventListener("keyup",e=>{ if(e.key==="PrintScreen"){ try{ navigator.clipboard.writeText(""); }catch{} } });
-  // blur content when the tab/window loses focus (makes snipping tools less convenient)
-  window.addEventListener("blur",()=>document.body.classList.add("blurred"));
-  window.addEventListener("focus",()=>document.body.classList.remove("blurred"));
 }
 
 const FOLDER_MIME = "application/vnd.google-apps.folder";
