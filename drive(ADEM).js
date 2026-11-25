@@ -1,14 +1,11 @@
-/* ============ CONFIG — EDIT THESE TWO LINES ============ */
-const FOLDER_ID = "18gGjbR0podkhjt4mMhlmAKeiaX_jt8p0";   // the ID at the end of the folder URL
-const API_KEY   = "AIzaSyDPZdVG_iQEz7qdZ_otrhOCzSEi6IuS474";     // Google Drive API key (restrict it to your site!)
-const REFRESH_SECONDS = 20;                    // how often the site re-checks Drive
-/* ======================================================= */
+/* ============ CONFIG ============ */
+const PROXY = "https://drive-proxy.adem-manai.workers.dev"; // your Cloudflare Worker
+const REFRESH_SECONDS = 20;                                 // how often the site re-checks Drive
+/* ================================ */
 
-const API = "https://www.googleapis.com/drive/v3/files";
-const FIELDS = "nextPageToken,files(id,name,mimeType,size,modifiedTime,webViewLink,thumbnailLink)";
 const FOLDER_MIME = "application/vnd.google-apps.folder";
 const $ = s => document.querySelector(s);
-const state = {path:[{id:FOLDER_ID,name:"shared"}], items:[], cat:"all", q:"", sort:"name", view:"grid", hash:""};
+const state = {path:[{id:"root",name:"shared"}], items:[], cat:"all", q:"", sort:"name", view:"grid", hash:""};
 document.getElementById("ivl").textContent = REFRESH_SECONDS;
 document.getElementById("yr").textContent = new Date().getFullYear();
 
@@ -36,7 +33,7 @@ function setStatus(kind,text){
 async function listFolder(id){
   let out=[], token="";
   do{
-    const url = `${API}?q=${encodeURIComponent(`'${id}' in parents and trashed=false`)}&fields=${encodeURIComponent(FIELDS)}&pageSize=1000&orderBy=folder,name&key=${API_KEY}${token?`&pageToken=${token}`:""}`;
+    const url = `${PROXY}?folder=${encodeURIComponent(id)}${token?`&pageToken=${encodeURIComponent(token)}`:""}`;
     const r = await fetch(url,{cache:"no-store"});
     if(!r.ok){
       let msg=r.status+""; try{ msg=(await r.json()).error.message }catch{}
@@ -50,7 +47,6 @@ async function listFolder(id){
 }
 
 async function load(silent){
-  if(FOLDER_ID.startsWith("PUT_")||API_KEY.startsWith("PUT_")){ renderSetup(); setStatus("err","not configured"); return; }
   if(!silent){ setStatus("load","syncing…"); $("#view").innerHTML='<div class="grid">'+'<div class="skel"></div>'.repeat(6)+'</div>'; }
   try{
     const items = await listFolder(state.path.at(-1).id);
@@ -61,20 +57,8 @@ async function load(silent){
     if(changed||!silent) render();
   }catch(e){
     setStatus("err","error");
-    if(!silent) $("#view").innerHTML=`<div class="empty"><b style="color:var(--red)">Drive error:</b> ${esc(e.message)}<br><br>Check: folder is shared as “Anyone with the link”, Drive API is enabled, and the API key is allowed for this site.</div>`;
+    if(!silent) $("#view").innerHTML=`<div class="empty"><b style="color:var(--red)">Drive error:</b> ${esc(e.message)}<br><br>Check: the folder is shared as “Anyone with the link” and the proxy is running.</div>`;
   }
-}
-
-function renderSetup(){
-  $("#view").innerHTML=`<div class="setup"><h2>// setup required</h2>
-  Open <code>index.html</code> and fill the two config lines at the top of the script:
-  <ol>
-   <li>In Google Drive, right-click your folder → <b>Share</b> → General access → <code>Anyone with the link: Viewer</code>.</li>
-   <li>Copy the folder ID from its URL: <code>drive.google.com/drive/folders/<b>THIS_PART</b></code> → <code>FOLDER_ID</code>.</li>
-   <li>Google Cloud Console → create project → enable <b>Google Drive API</b> → Credentials → <b>API key</b> → <code>API_KEY</code>.</li>
-   <li>Restrict the key: <i>HTTP referrers</i> = your site's domain, <i>API restriction</i> = Drive API only.</li>
-   <li>Upload the file to any static host (GitHub Pages, Netlify, Cloudflare Pages…).</li>
-  </ol></div>`;
 }
 
 function filtered(){
