@@ -1,0 +1,327 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DriveHub // IoT</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070b10; --panel:#0d141c; --panel2:#111b26; --line:#1b2a3a;
+  --text:#d6e2ee; --muted:#6f8398;
+  --green:#00ff9c; --cyan:#22d3ee; --red:#ff4d6d; --amber:#ffb703;
+  --it:#22d3ee; --iot:#ffb703; --cyber:#ff4d6d;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:'Space Grotesk',system-ui,sans-serif;min-height:100vh;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;z-index:-2;
+  background-image:linear-gradient(rgba(34,211,238,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(34,211,238,.05) 1px,transparent 1px);
+  background-size:44px 44px;mask-image:radial-gradient(ellipse at 50% 0%,#000 30%,transparent 80%)}
+body::after{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(600px 300px at 15% 0%,rgba(0,255,156,.10),transparent),radial-gradient(600px 300px at 90% 10%,rgba(34,211,238,.10),transparent)}
+.mono{font-family:'JetBrains Mono',monospace}
+a{color:inherit;text-decoration:none}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+
+/* nav */
+nav{position:sticky;top:0;z-index:20;backdrop-filter:blur(10px);background:rgba(7,11,16,.8);border-bottom:1px solid var(--line)}
+nav .wrap{display:flex;align-items:center;justify-content:space-between;height:60px}
+.logo{display:flex;align-items:center;gap:10px;font-family:'JetBrains Mono',monospace;font-weight:700;letter-spacing:.5px}
+.logo i{width:30px;height:30px;border:1.5px solid var(--green);border-radius:7px;display:grid;place-items:center;color:var(--green);font-style:normal;box-shadow:0 0 14px rgba(0,255,156,.35)}
+.logo b{color:var(--green)}
+.status{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);animation:pulse 2s infinite}
+.dot.err{background:var(--red);box-shadow:0 0 10px var(--red);animation:none}
+.dot.load{background:var(--amber);box-shadow:0 0 10px var(--amber)}
+@keyframes pulse{50%{opacity:.35}}
+
+/* hero */
+.hero{padding:64px 0 28px}
+.term{display:inline-block;font-size:12px;color:var(--green);border:1px solid rgba(0,255,156,.3);background:rgba(0,255,156,.06);padding:5px 12px;border-radius:999px;margin-bottom:20px}
+h1{font-size:clamp(34px,6vw,64px);line-height:1.05;letter-spacing:-1.5px;font-weight:700}
+h1 .g{background:linear-gradient(90deg,var(--green),var(--cyan));-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{color:var(--muted);max-width:620px;margin-top:16px;font-size:17px;line-height:1.6}
+.tags{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}
+.tag{font-family:'JetBrains Mono',monospace;font-size:12px;padding:6px 12px;border-radius:6px;border:1px solid}
+.tag.it{color:var(--it);border-color:rgba(34,211,238,.4);background:rgba(34,211,238,.07)}
+.tag.iot{color:var(--iot);border-color:rgba(255,183,3,.4);background:rgba(255,183,3,.07)}
+.tag.cyber{color:var(--cyber);border-color:rgba(255,77,109,.4);background:rgba(255,77,109,.07)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-top:34px}
+.stat{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.stat b{display:block;font-family:'JetBrains Mono',monospace;font-size:26px;color:var(--green)}
+.stat span{font-size:12px;color:var(--muted)}
+
+/* toolbar */
+.toolbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:30px 0 14px}
+.search{flex:1;min-width:220px;position:relative}
+.search input{width:100%;background:var(--panel);border:1px solid var(--line);color:var(--text);border-radius:10px;padding:12px 14px 12px 40px;font:14px 'JetBrains Mono',monospace;outline:none;transition:.2s}
+.search input:focus{border-color:var(--green);box-shadow:0 0 0 3px rgba(0,255,156,.12)}
+.search svg{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted)}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{font:500 12px 'JetBrains Mono',monospace;padding:9px 14px;border-radius:8px;border:1px solid var(--line);background:var(--panel);color:var(--muted);cursor:pointer;transition:.2s}
+.chip:hover{color:var(--text);border-color:var(--muted)}
+.chip.on{color:#001a10;background:var(--green);border-color:var(--green);font-weight:700}
+.chip.on.it{background:var(--it);border-color:var(--it)}
+.chip.on.iot{background:var(--iot);border-color:var(--iot)}
+.chip.on.cyber{background:var(--cyber);border-color:var(--cyber);color:#fff}
+.seg{display:flex;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.seg button{background:var(--panel);color:var(--muted);border:0;padding:9px 12px;cursor:pointer;font:12px 'JetBrains Mono',monospace}
+.seg button.on{background:var(--panel2);color:var(--green)}
+select{background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:9px 10px;font:12px 'JetBrains Mono',monospace}
+
+.crumbs{font:13px 'JetBrains Mono',monospace;color:var(--muted);margin:6px 0 16px;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.crumbs a{color:var(--cyan);cursor:pointer}
+.crumbs a:hover{text-decoration:underline}
+.crumbs .cur{color:var(--green)}
+
+/* grid */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px;padding-bottom:70px}
+.card{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:12px;transition:.2s;cursor:pointer;overflow:hidden;animation:in .35s both}
+@keyframes in{from{opacity:0;transform:translateY(8px)}}
+.card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--c,var(--it));opacity:.8}
+.card:hover{border-color:var(--c,var(--it));transform:translateY(-3px);box-shadow:0 10px 30px -12px var(--c,var(--it))}
+.card .top{display:flex;gap:12px;align-items:center}
+.ico{flex:none;width:44px;height:44px;border-radius:10px;display:grid;place-items:center;font:700 11px 'JetBrains Mono',monospace;color:var(--c,var(--it));background:rgba(255,255,255,.04);border:1px solid var(--line)}
+.card h3{font-size:15px;font-weight:500;line-height:1.3;word-break:break-word;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.meta{display:flex;justify-content:space-between;font:11px 'JetBrains Mono',monospace;color:var(--muted)}
+.badge{font:700 10px 'JetBrains Mono',monospace;padding:3px 8px;border-radius:5px;color:var(--c);border:1px solid var(--c);background:rgba(255,255,255,.03);align-self:flex-start}
+.actions{display:flex;gap:8px;margin-top:auto}
+.btn{flex:1;text-align:center;font:500 12px 'JetBrains Mono',monospace;padding:8px;border-radius:7px;border:1px solid var(--line);background:var(--panel2);color:var(--text);cursor:pointer;transition:.15s}
+.btn:hover{border-color:var(--green);color:var(--green)}
+.btn.p{background:rgba(0,255,156,.1);border-color:rgba(0,255,156,.4);color:var(--green)}
+.new{position:absolute;right:10px;top:10px;font:700 9px 'JetBrains Mono',monospace;background:var(--green);color:#001a10;padding:2px 6px;border-radius:4px}
+.list .grid{grid-template-columns:1fr}
+.list .card{flex-direction:row;align-items:center;gap:16px;padding:12px 16px}
+.list .card .top{flex:1}
+.list .actions{margin:0;min-width:200px}
+.list .meta{min-width:190px;flex-direction:column;gap:2px}
+
+.empty,.setup{background:var(--panel);border:1px dashed var(--line);border-radius:14px;padding:36px;text-align:center;color:var(--muted);margin-bottom:70px}
+.setup{text-align:left;color:var(--text);border-color:rgba(255,183,3,.5)}
+.setup h2{color:var(--amber);margin-bottom:10px;font-family:'JetBrains Mono',monospace}
+.setup ol{margin:12px 0 0 20px;line-height:1.9;color:var(--muted)}
+.setup code{background:#000;padding:2px 6px;border-radius:4px;color:var(--green);font-family:'JetBrains Mono',monospace}
+.skel{height:132px;border-radius:14px;background:linear-gradient(90deg,var(--panel),var(--panel2),var(--panel));background-size:200% 100%;animation:sh 1.2s infinite}
+@keyframes sh{to{background-position:-200% 0}}
+
+/* modal */
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:50;display:none;align-items:center;justify-content:center;padding:20px}
+.modal.on{display:flex}
+.mbox{width:min(1100px,100%);height:min(86vh,100%);background:var(--panel);border:1px solid var(--line);border-radius:14px;display:flex;flex-direction:column;overflow:hidden}
+.mhead{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);font:13px 'JetBrains Mono',monospace}
+.mhead span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--green)}
+.mbox iframe{flex:1;border:0;background:#fff}
+footer{border-top:1px solid var(--line);padding:26px 0;color:var(--muted);font:12px 'JetBrains Mono',monospace;text-align:center}
+@media(max-width:700px){.list .card{flex-direction:column;align-items:stretch}.list .meta,.list .actions{min-width:0}}
+</style>
+</head>
+<body>
+
+<nav><div class="wrap">
+  <div class="logo"><i>&gt;_</i><span>Adem-Manai<b>/DRIVE-IOT-1</b></span></div>
+  <div class="status mono"><span class="dot load" id="dot"></span><span id="stat">connecting…</span></div>
+</div></nav>
+
+<header class="hero"><div class="wrap">
+  <div class="term mono">root@IOT1DRIVE:~# ls -la /shared</div>
+  <h1>Connect. Sense. <span class="g">Build.</span><br>Resources for IoT1 students.</h1>
+  <p class="sub">Jaw L IoT1 Lkol Hne ( D3IWT 5IR BELEHI CHABEB L ADEM MANAI T-T )</p>
+  <div class="tags"><span class="tag iot">#IoT</span></div>
+  <div class="stats">
+    <div class="stat"><b id="sFiles">0</b><span>files</span></div>
+    <div class="stat"><b id="sFolders">0</b><span>folders</span></div>
+    <div class="stat"><b id="sSize">0</b><span>total size</span></div>
+    <div class="stat"><b id="sLast">—</b><span>last update</span></div>
+  </div>
+</div></header>
+
+<main class="wrap">
+  <div class="toolbar">
+    <div class="search">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input id="q" class="mono" placeholder="grep -i 'search files…'" autocomplete="off">
+    </div>
+    <select id="sort">
+      <option value="name">Name</option>
+      <option value="new">Newest</option>
+      <option value="size">Size</option>
+    </select>
+    <div class="seg"><button id="vGrid" class="on">GRID</button><button id="vList">LIST</button></div>
+  </div>
+  <div class="crumbs" id="crumbs"></div>
+  <div id="view"></div>
+</main>
+
+<footer>
+  <div>© <span id="yr"></span> ADEM MANAI. All rights reserved.</div>
+  <div style="margin-top:6px;opacity:.7">IOT1 DRIVE<span id="ivl"></span>s</div>
+</footer>
+
+<div class="modal" id="modal"><div class="mbox">
+  <div class="mhead"><span id="mtitle"></span><div style="display:flex;gap:8px"><a class="btn p" id="mdl" target="_blank" rel="noopener" style="padding:6px 12px">Download</a><button class="btn" id="mclose" style="padding:6px 12px">Close ✕</button></div></div>
+  <iframe id="mframe" allow="autoplay" sandbox="allow-scripts allow-same-origin allow-popups"></iframe>
+</div></div>
+
+<script>
+/* ============ CONFIG — EDIT THESE TWO LINES ============ */
+const FOLDER_ID = "18gGjbR0podkhjt4mMhlmAKeiaX_jt8p0";   // the ID at the end of the folder URL
+const API_KEY   = "AIzaSyDPZdVG_iQEz7qdZ_otrhOCzSEi6IuS474";     // Google Drive API key (restrict it to your site!)
+const REFRESH_SECONDS = 20;                    // how often the site re-checks Drive
+/* ======================================================= */
+
+const API = "https://www.googleapis.com/drive/v3/files";
+const FIELDS = "nextPageToken,files(id,name,mimeType,size,modifiedTime,webViewLink,thumbnailLink)";
+const FOLDER_MIME = "application/vnd.google-apps.folder";
+const $ = s => document.querySelector(s);
+const state = {path:[{id:FOLDER_ID,name:"shared"}], items:[], cat:"all", q:"", sort:"name", view:"grid", hash:""};
+document.getElementById("ivl").textContent = REFRESH_SECONDS;
+document.getElementById("yr").textContent = new Date().getFullYear();
+
+const CAT_COLOR = {iot:"var(--iot)"};
+const CAT_LABEL = {iot:"IoT"};
+function category(){ return "iot"; }
+const esc = s => String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+function fmtSize(b){ b=+b; if(!b) return "—"; const u=["B","KB","MB","GB"]; let i=0; while(b>=1024&&i<3){b/=1024;i++} return b.toFixed(i?1:0)+" "+u[i]; }
+function fmtDate(d){ return new Date(d).toLocaleDateString(undefined,{day:"2-digit",month:"short",year:"numeric"}); }
+function ext(f){
+  if(f.mimeType===FOLDER_MIME) return "DIR";
+  if(f.mimeType.includes("document")) return "DOC";
+  if(f.mimeType.includes("spreadsheet")) return "XLS";
+  if(f.mimeType.includes("presentation")) return "PPT";
+  const e=(f.name.split(".").pop()||"").toUpperCase();
+  return e.length<=4 && f.name.includes(".") ? e : "FILE";
+}
+const isGoogleApp = f => f.mimeType.startsWith("application/vnd.google-apps.") && f.mimeType!==FOLDER_MIME;
+
+function setStatus(kind,text){
+  $("#dot").className = "dot"+(kind==="ok"?"":" "+kind);
+  $("#stat").textContent = text;
+}
+
+async function listFolder(id){
+  let out=[], token="";
+  do{
+    const url = `${API}?q=${encodeURIComponent(`'${id}' in parents and trashed=false`)}&fields=${encodeURIComponent(FIELDS)}&pageSize=1000&orderBy=folder,name&key=${API_KEY}${token?`&pageToken=${token}`:""}`;
+    const r = await fetch(url,{cache:"no-store"});
+    if(!r.ok){
+      let msg=r.status+""; try{ msg=(await r.json()).error.message }catch{}
+      throw new Error(msg);
+    }
+    const j = await r.json();
+    out = out.concat(j.files||[]);
+    token = j.nextPageToken||"";
+  }while(token);
+  return out;
+}
+
+async function load(silent){
+  if(FOLDER_ID.startsWith("PUT_")||API_KEY.startsWith("PUT_")){ renderSetup(); setStatus("err","not configured"); return; }
+  if(!silent){ setStatus("load","syncing…"); $("#view").innerHTML='<div class="grid">'+'<div class="skel"></div>'.repeat(6)+'</div>'; }
+  try{
+    const items = await listFolder(state.path.at(-1).id);
+    const h = JSON.stringify(items.map(i=>[i.id,i.name,i.modifiedTime,i.size]));
+    const changed = h!==state.hash;
+    state.items = items; state.hash=h;
+    setStatus("ok","live · synced "+new Date().toLocaleTimeString());
+    if(changed||!silent) render();
+  }catch(e){
+    setStatus("err","error");
+    if(!silent) $("#view").innerHTML=`<div class="empty"><b style="color:var(--red)">Drive error:</b> ${esc(e.message)}<br><br>Check: folder is shared as “Anyone with the link”, Drive API is enabled, and the API key is allowed for this site.</div>`;
+  }
+}
+
+function renderSetup(){
+  $("#view").innerHTML=`<div class="setup"><h2>// setup required</h2>
+  Open <code>index.html</code> and fill the two config lines at the top of the script:
+  <ol>
+   <li>In Google Drive, right-click your folder → <b>Share</b> → General access → <code>Anyone with the link: Viewer</code>.</li>
+   <li>Copy the folder ID from its URL: <code>drive.google.com/drive/folders/<b>THIS_PART</b></code> → <code>FOLDER_ID</code>.</li>
+   <li>Google Cloud Console → create project → enable <b>Google Drive API</b> → Credentials → <b>API key</b> → <code>API_KEY</code>.</li>
+   <li>Restrict the key: <i>HTTP referrers</i> = your site's domain, <i>API restriction</i> = Drive API only.</li>
+   <li>Upload the file to any static host (GitHub Pages, Netlify, Cloudflare Pages…).</li>
+  </ol></div>`;
+}
+
+function filtered(){
+  let a = state.items.filter(f=>{
+    if(state.q && !f.name.toLowerCase().includes(state.q)) return false;
+    return true;
+  });
+  const s=state.sort;
+  a.sort((x,y)=>{
+    const fx=x.mimeType===FOLDER_MIME, fy=y.mimeType===FOLDER_MIME;
+    if(fx!==fy) return fx?-1:1;
+    if(s==="new") return new Date(y.modifiedTime)-new Date(x.modifiedTime);
+    if(s==="size") return (+y.size||0)-(+x.size||0);
+    return x.name.localeCompare(y.name,undefined,{numeric:true});
+  });
+  return a;
+}
+
+function render(){
+  const all=state.items, files=all.filter(f=>f.mimeType!==FOLDER_MIME);
+  $("#sFiles").textContent=files.length;
+  $("#sFolders").textContent=all.length-files.length;
+  $("#sSize").textContent=fmtSize(files.reduce((a,f)=>a+(+f.size||0),0));
+  $("#sLast").textContent=all.length?fmtDate(Math.max(...all.map(f=>new Date(f.modifiedTime)))):"—";
+
+  $("#crumbs").innerHTML = state.path.map((p,i)=> i===state.path.length-1
+    ? `<span class="cur">${esc(p.name)}</span>`
+    : `<a data-i="${i}">${esc(p.name)}</a><span>/</span>`).join(" ");
+  $("#crumbs").querySelectorAll("a").forEach(a=>a.onclick=()=>{state.path=state.path.slice(0,+a.dataset.i+1);state.hash="";load();});
+
+  const list=filtered();
+  const view=$("#view");
+  view.className = state.view==="list"?"list":"";
+  if(!list.length){ view.innerHTML='<div class="empty mono">$ no results found</div>'; return; }
+  const week = Date.now()-7*864e5;
+  view.innerHTML = '<div class="grid">'+list.map((f,i)=>{
+    const dir=f.mimeType===FOLDER_MIME, c=category(f.name), col=CAT_COLOR[c];
+    const fresh=new Date(f.modifiedTime)>week && !dir;
+    const dl=`https://drive.google.com/uc?export=download&id=${f.id}`;
+    return `<div class="card" style="--c:${col};animation-delay:${Math.min(i,20)*25}ms" data-id="${f.id}" data-dir="${dir?1:0}">
+      ${fresh?'<span class="new">NEW</span>':''}
+      <div class="top"><div class="ico">${dir?'📁':ext(f)}</div><div><h3>${esc(f.name)}</h3></div></div>
+      <div class="meta"><span>${dir?"folder":fmtSize(f.size)}</span><span>${fmtDate(f.modifiedTime)}</span></div>
+      <span class="badge">${CAT_LABEL[c]}</span>
+      <div class="actions">
+        ${dir?`<span class="btn p">Open ›</span>`:
+          `<span class="btn p" data-act="view">Preview</span>
+           <a class="btn" data-act="dl" target="_blank" rel="noopener" href="${isGoogleApp(f)?esc(f.webViewLink):dl}">${isGoogleApp(f)?"Open":"Download"}</a>`}
+      </div></div>`;
+  }).join("")+'</div>';
+
+  view.querySelectorAll(".card").forEach(card=>{
+    const f=state.items.find(x=>x.id===card.dataset.id);
+    card.onclick=e=>{
+      if(e.target.closest('[data-act="dl"]')) return;
+      if(card.dataset.dir==="1"){ state.path.push({id:f.id,name:f.name}); state.hash=""; state.q=""; $("#q").value=""; load(); }
+      else openPreview(f);
+    };
+  });
+}
+
+function openPreview(f){
+  $("#mtitle").textContent=f.name;
+  $("#mframe").src=`https://drive.google.com/file/d/${f.id}/preview`;
+  $("#mdl").href = isGoogleApp(f)?f.webViewLink:`https://drive.google.com/uc?export=download&id=${f.id}`;
+  $("#modal").classList.add("on");
+}
+function closeModal(){ $("#modal").classList.remove("on"); $("#mframe").src="about:blank"; }
+$("#mclose").onclick=closeModal;
+$("#modal").onclick=e=>{ if(e.target.id==="modal") closeModal(); };
+document.addEventListener("keydown",e=>{ if(e.key==="Escape") closeModal(); });
+
+$("#q").oninput=e=>{state.q=e.target.value.toLowerCase().trim();render();};
+$("#sort").onchange=e=>{state.sort=e.target.value;render();};
+$("#vGrid").onclick=()=>{state.view="grid";$("#vGrid").classList.add("on");$("#vList").classList.remove("on");render();};
+$("#vList").onclick=()=>{state.view="list";$("#vList").classList.add("on");$("#vGrid").classList.remove("on");render();};
+
+load();
+setInterval(()=>{ if(!document.hidden && !$("#modal").classList.contains("on")) load(true); }, REFRESH_SECONDS*1000);
+document.addEventListener("visibilitychange",()=>{ if(!document.hidden) load(true); });
+</script>
+</body>
+</html>
