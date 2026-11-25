@@ -49,7 +49,8 @@ function setStatus(kind,text){
 async function listFolder(id){
   let out=[], token="";
   do{
-    const url = `${PROXY}?folder=${encodeURIComponent(id)}${token?`&pageToken=${encodeURIComponent(token)}`:""}`;
+    const chain = state.path.slice(1).map(p=>p.id).join(",");
+    const url = `${PROXY}?folder=${encodeURIComponent(id)}${chain?`&path=${encodeURIComponent(chain)}`:""}${token?`&pageToken=${encodeURIComponent(token)}`:""}`;
     const r = await fetch(url,{cache:"no-store"});
     if(!r.ok){
       let msg=r.status+""; try{ msg=(await r.json()).error.message }catch{}
